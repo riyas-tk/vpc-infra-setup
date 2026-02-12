@@ -1,12 +1,3 @@
-# data "aws_subnet" "this" {
-#     filter {
-#     name   = "tag:Name"
-#     values = [ var.subnet_name
-#     ]
-#   }
-# }
-
-
 resource "aws_instance" "spot_ec2" {
   region            = var.region
   availability_zone = var.availability_zone
@@ -35,6 +26,6 @@ resource "aws_instance" "spot_ec2" {
 }
 
 
-output "ec2_public_dns" {
-  value = aws_instance.spot_ec2.public_dns
+output "ec2_data" {
+  value = aws_instance.spot_ec2
 }
