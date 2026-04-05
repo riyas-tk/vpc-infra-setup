@@ -1,0 +1,5 @@
+#!/bin/bash
+cat << EOF >> /home/ec2-user/.ssh/config
+Host *
+  StrictHostKeyChecking no 
+EOF

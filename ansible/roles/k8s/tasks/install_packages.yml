@@ -1,0 +1,42 @@
+
+- name: Add docker repository for containerd
+  ansible.builtin.command:
+    cmd: dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+  
+- name: Add kubernetes repo
+  ansible.builtin.yum_repository:
+    name: kubernetes
+    description: Kubernetes Stable - $basearch
+    baseurl: https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
+    gpgcheck: no
+    enabled: yes
+    state: present
+
+- name: Install packages
+  yum:
+    name: containerd
+    state: present
+    update_cache: yes
+
+- name: enable containerd
+  ansible.builtin.systemd:
+    name: containerd
+    enabled: yes
+    state: started
+
+- name: Install packages
+  yum:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop: 
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: enable kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    enabled: yes
+    state: started
+

@@ -21,8 +21,11 @@ resource "aws_instance" "spot_ec2" {
   instance_type = var.instance_type
   tags = merge(
     var.tags, {
-      Name = var.instance_name
+      Name = var.instance_name,
+      type = var.instance_role
   })
+  user_data_base64 = var.userdata_base64  
+
 }
 
 

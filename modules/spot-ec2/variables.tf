@@ -16,9 +16,18 @@ variable "instance_type" {
   type = string
 }
 
+variable "instance_role" {
+  type = string
+}
+
 variable "spot_type" {
   type    = string
   default = "one-time"
+}
+
+variable "userdata_base64" {
+  type = string
+  default = ""
 }
 
 variable "persistent_spot_settings" {

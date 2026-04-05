@@ -1,3 +1,8 @@
+locals {
+  priv_subnets_list = [ for k, v in var.subnet_cidr_config : k if can(regex("priv", k)) ]
+}
+
+
 # Define the VPC
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -57,7 +62,7 @@ resource "aws_route_table_association" "public_assoc" {
 }
 
 resource "aws_route_table_association" "private_assoc" {
-  for_each       = toset(["subnet-priv1", "subnet-priv2", "subnet-priv3"])
+  for_each       = toset(local.priv_subnets_list)
   subnet_id      = aws_subnet.subnets[each.key].id
   route_table_id = aws_route_table.private.id
 }
@@ -116,13 +121,29 @@ resource "aws_network_acl" "public_nacl" {
     rule_no    = 100
     action     = "allow"
     cidr_block = "0.0.0.0/0"
-    from_port  = 0
+    from_port  = 0 
     to_port    = 0
   }
 
   ingress {
     protocol   = "tcp"
+    rule_no    = 10
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 80
+    to_port    = 80
+  }
+  ingress {
+    protocol   = "tcp"
     rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 443 
+    to_port    = 443
+  }
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 200
     action     = "allow"
     cidr_block = "0.0.0.0/0"
     from_port  = 22
@@ -131,7 +152,7 @@ resource "aws_network_acl" "public_nacl" {
 
   ingress {
     protocol   = "tcp"
-    rule_no    = 200
+    rule_no    = 300
     action     = "allow"
     cidr_block = "0.0.0.0/0"
     from_port  = 1024
@@ -146,11 +167,7 @@ resource "aws_network_acl" "public_nacl" {
 # Private subnet NACL
 resource "aws_network_acl" "private_nacl" {
   vpc_id = aws_vpc.main.id
-  subnet_ids = [
-    aws_subnet.subnets["subnet-priv1"].id,
-    aws_subnet.subnets["subnet-priv2"].id,
-    aws_subnet.subnets["subnet-priv3"].id,
-  ]
+  subnet_ids = [ for item in toset(local.priv_subnets_list) : aws_subnet.subnets[item].id ]
   egress {
     protocol   = "-1"
     rule_no    = 100

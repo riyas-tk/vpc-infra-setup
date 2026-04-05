@@ -9,6 +9,7 @@ module "spot_instances" {
   for_each = local.instances
 
   instance_name     = each.key
+  instance_role     = each.value.role
   region            = local.region
   availability_zone = local.subnet_cidr_config[each.value.subnet].az
 
@@ -16,6 +17,7 @@ module "spot_instances" {
   instance_type   = each.value.type
   subnet_id       = module.my_vpc_infra.subnet_ids[each.value.subnet].id
   sg_id           = each.value.public_sg ? module.my_vpc_infra.public_sg_id : module.my_vpc_infra.private_sg_id
+  userdata_base64 = try(each.value.userdata_base64, "") 
   ssh_key         = aws_key_pair.ssh_key.id
   valid_until_hrs = var.valid_until_hrs
   depends_on = [ aws_key_pair.ssh_key 
